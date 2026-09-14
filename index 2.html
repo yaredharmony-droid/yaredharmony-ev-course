@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Yaredharmoney EV Course</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+  body { margin:0; font-family:'Inter',sans-serif; background:#10151B; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-type="module">
+const { useState } = React;
+
+const BUNNY_LIBRARY_ID = "664298";
+
+const MODULES = [
+  { id: "m1", title: "Why Electric Vehicles, Why Now", lessons: [
+    { id: "l1b", title: "Introduction to EV and HEV", duration: "14 min", free: true, videoId: "6bb5f77f-7ca9-487a-b9a0-cedcb1de5fe3" },
+    { id: "l1c", title: "Introduction to EV: MHEV and FCEV", duration: "13 min", free: true, videoId: "d8be9f12-07bd-4e3b-9a75-3adbdad51824" },
+    { id: "l1", title: "The global shift to electric", duration: "12 min", free: true, videoId: "", content: "Electric vehicles have gone from a niche experiment to a mainstream shift in less than a decade. Major manufacturers — from established automakers to newer EV-focused brands — now produce electric models across nearly every price range and vehicle type.\n\nThis shift is driven by falling battery costs, tightening emissions regulations in many countries, and growing consumer demand for lower running costs. Compared to combustion engines, EVs are simpler mechanically, with far fewer moving parts to wear out or maintain.\n\nBy the end of this course, you'll understand not just how EVs work, but how to buy, import, and maintain one here in Ethiopia." },
+    { id: "l2", title: "EVs in the Ethiopian market", duration: "18 min", free: true, videoId: "", content: "Ethiopia has seen a fast-growing wave of EV imports in recent years, with brands like Changan, BYD, Neta, Chery, and Dongfeng becoming increasingly common on the road — all vehicles you'll study in detail later in this course.\n\nGovernment policy has played a role in this growth, with import incentives making EVs more price-competitive than in many other markets. At the same time, charging infrastructure is still developing, and local technical expertise is limited.\n\nThat gap — between growing EV ownership and the knowledge needed to service and maintain these vehicles — is exactly what this course is built to close." },
+    { id: "l3", title: "Cost of ownership vs. combustion", duration: "15 min", free: false, videoId: "", content: "One of the strongest arguments for EV ownership is long-term cost. Electricity costs significantly less per kilometer than fuel, and EVs require far less routine maintenance — no oil changes, fewer fluids, and simpler drivetrains with fewer parts that wear out.\n\nThe upfront purchase price is often higher, but this gap narrows over the vehicle's lifetime through fuel and maintenance savings.\n\nThe one major long-term cost to plan for is eventual battery replacement — a real consideration, but typically only relevant after many years of use." },
+  ]},
+  { id: "m2", title: "EV Systems & Components", lessons: [
+    { id: "l4", title: "Battery, motor, and inverter basics", duration: "20 min", free: false, videoId: "", content: "Every EV drivetrain follows the same basic path: the battery stores energy, the inverter converts that stored DC (direct current) power into AC (alternating current), and the motor uses that AC power to turn the wheels.\n\nThe battery is the largest and most expensive component in the vehicle. The inverter acts as a translator between the battery and motor, since motors need alternating current to spin efficiently. The motor itself converts electrical energy into mechanical motion.\n\nIn the lessons that follow, we'll go deep into each of these systems individually, including the on-board charger, DC-DC converter, and battery management system." },
+    { id: "l4a", title: "Introduction to Battery (Battery Types)", duration: "16 min", free: false, videoId: "9ba7659d-0a9e-4211-8e7f-f038a3deedb9" },
+    { id: "l4a1", title: "Introduction to Battery (Part 1)", duration: "16 min", free: false, videoId: "4a106ab1-65ef-4993-8433-56b86b8a0c11" },
+    { id: "l4a2", title: "Introduction to Battery (BMS)", duration: "16 min", free: false, videoId: "2451c469-6bc4-400f-a843-92fc5f3fb66b" },
+    { id: "l4a3", title: "Introduction to Battery (BMS 2)", duration: "16 min", free: false, videoId: "88dcda9e-53fb-4a76-b2a7-5836504eac7c" },
+    { id: "l4thermal", title: "Thermal Management", duration: "15 min", free: false, videoId: "", content: "Batteries and motors generate heat during use, and heat is one of the biggest threats to both performance and lifespan. Without proper thermal management, batteries degrade faster, lose range, and in extreme cases can become unsafe.\n\nMost modern EVs use liquid cooling loops that circulate coolant around the battery pack and motor to keep temperatures in a safe range, though some systems rely on air cooling instead.\n\nAs a technician, checking the cooling system — coolant levels, pump function, and radiator condition — should be part of any thorough EV inspection, especially for vehicles operating in hot climates." },
+    { id: "l4b", title: "On-board charger and DC-DC converter", duration: "18 min", free: false, videoId: "4da69748-f42e-4728-b5d2-4e7513a31c47" },
+    { id: "l4q", title: "Traction Motor", duration: "15 min", free: false, videoId: "e9979f3e-c4c8-41c3-8863-6ef164bfc874" },
+    { id: "l4g", title: "Charging System", duration: "15 min", free: false, videoId: "72eb1e0e-4628-4b4e-b3ac-b02e8c6daeb0" },
+    { id: "l4g2", title: "Charging System (Part 2)", duration: "15 min", free: false, videoId: "0a3be9e5-eac8-43a5-852e-ccab5059299a" },
+    { id: "l5", title: "Charging types explained", duration: "14 min", free: false, videoId: "", content: "EV charging comes in a few distinct speeds. Level 1 charging uses a standard household outlet and is the slowest option, suitable mainly for overnight top-ups. Level 2 charging uses higher-voltage AC power, common in home charging stations and public chargers, and is significantly faster.\n\nDC fast charging skips the vehicle's onboard charger entirely and feeds power directly to the battery, allowing an 80% charge in well under an hour for many vehicles — though it requires dedicated fast-charging infrastructure.\n\nFor most EV owners in Ethiopia today, Level 1 and Level 2 home charging are the most realistic options, with fast charging becoming more relevant as public infrastructure expands." },
+    { id: "l6", title: "Range, efficiency, and climate effects", duration: "16 min", free: false, videoId: "", content: "An EV's real-world range is almost always lower than its official rated range, and understanding why helps set realistic expectations for owners.\n\nCold and hot weather both reduce range — cold temperatures slow chemical reactions inside the battery, while heat increases the energy needed for cooling systems and cabin climate control. Aggressive driving, highway speeds, and hilly terrain also increase energy consumption.\n\nNone of this means EVs aren't practical for daily use — it simply means planning trips with a buffer and adjusting driving habits when maximizing range matters." },
+  ]},
+  { id: "m3", title: "Vehicle-Specific Diagnostics & Repair", lessons: [
+    { id: "l4c", title: "DC-DC Converter and OBC: Changan E-Star", duration: "16 min", free: false, videoId: "ec2bd1de-a1fa-45b0-920f-9f44abb7bd6e" },
+    { id: "l4j", title: "Battery: Changan E-Star", duration: "17 min", free: false, videoId: "74d8bed8-2af2-414f-8dff-7bffc0c33a43" },
+    { id: "l4f", title: "DC-DC Converter and OBC: Dongfeng", duration: "16 min", free: false, videoId: "56491b24-0555-476d-b525-48229b17cc13" },
+    { id: "l4p", title: "Inverter and DC-DC: Peugeot", duration: "16 min", free: false, videoId: "d079a6f7-fb87-4e6d-b90f-38909746efc8" },
+    { id: "l4d", title: "Components of an EV: Neta", duration: "15 min", free: false, videoId: "4f6b4e11-50d2-4ea4-943b-3d8950d6b958" },
+    { id: "l4h", title: "Battery Assembly: Neta", duration: "17 min", free: false, videoId: "7872e73a-0a87-42ba-a0d8-c4056c40a554" },
+    { id: "l4i", title: "Battery Disassembly", duration: "17 min", free: false, videoId: "399cc07c-6ac5-4b19-8777-5e1f02cff01d" },
+    { id: "l4e", title: "Components of an EV: BYD", duration: "15 min", free: false, videoId: "b6c38df7-3129-4c34-875f-2d02a7eac270" },
+    { id: "l4k", title: "BYD Diagnosis", duration: "17 min", free: false, videoId: "bfb015ff-4742-4ce3-a2b7-e0fe5224d6ae" },
+    { id: "l4l", title: "BYD Yuan Up Diagnosis", duration: "17 min", free: false, videoId: "a71573c4-4ad5-49f5-9d80-d38070ba50db" },
+    { id: "l4m", title: "Chery iCar 3 Health Report", duration: "16 min", free: false, videoId: "b7b70d0d-0b64-41c0-a120-6c569cd81416" },
+    { id: "l4n", title: "Chery iCar 3 Trailer Mode", duration: "14 min", free: false, videoId: "a7d8a7b6-054b-414e-a1cf-61b78e2b0dd6" },
+    { id: "l4o", title: "Chery Service Reset", duration: "12 min", free: false, videoId: "42a7f7af-ace4-403b-9e5d-5167cb329804" },
+  ]},
+  { id: "m4", title: "Buying, Importing, and Owning", lessons: [
+    { id: "l7", title: "Import rules and duties", duration: "19 min", free: false, videoId: "", content: "Importing an EV into Ethiopia involves navigating specific customs duties, documentation requirements, and registration steps that differ from importing a combustion vehicle. Rates and incentives can change, so always verify current requirements with official government sources before advising a customer.\n\nCommon documentation includes proof of purchase, vehicle specifications, and compliance certificates. Missing or incorrect paperwork is one of the most frequent causes of delays at customs.\n\nStaying current on import regulations — and knowing where to find authoritative, up-to-date information — is a valuable skill for anyone helping customers navigate this process." },
+    { id: "l8", title: "Finding reliable charging access", duration: "13 min", free: false, videoId: "", content: "Charging access is often the biggest practical concern for new EV owners, especially in markets where public charging infrastructure is still developing. Home charging remains the most reliable option for most owners today, provided the electrical setup can safely support it.\n\nPublic charging networks are gradually expanding, and staying aware of new stations and their locations is genuinely useful advice for customers weighing an EV purchase.\n\nSetting realistic expectations upfront — rather than promising charging convenience that doesn't yet exist everywhere — builds trust and helps new owners plan their routines successfully." },
+    { id: "l9", title: "Maintenance and battery health", duration: "17 min", free: false, videoId: "", content: "EVs need less routine maintenance than combustion vehicles, but they aren't maintenance-free. Tires, brakes, cabin air filters, and cooling systems all still require regular attention.\n\nBattery health deserves special focus. Avoiding regularly charging to 100% or letting the battery sit near empty for long periods helps extend its usable lifespan. Extreme temperatures and frequent fast-charging can also accelerate degradation.\n\nKnowing the warning signs of battery or system issues — reduced range, unusual charging behavior, warning lights — and when a vehicle needs professional service closes out a well-rounded EV education." },
+  ]},
+];
+const ALL_LESSONS = MODULES.flatMap((m) => m.lessons);
+
+function Header({ setView, loggedIn }) {
+  return (
+    <header className="sticky top-0 z-20 bg-[#10151B]/95 backdrop-blur" style={{borderBottom:"1px solid #263140"}}>
+      <div className="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
+        <button onClick={() => setView("landing")} className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{background:"#35E0A1"}}>
+            <span style={{color:"#0B0F13", fontWeight:"bold"}}>⚡</span>
+          </div>
+          <span style={{fontFamily:"'Space Grotesk',sans-serif"}} className="text-[#EDEFF2] font-semibold text-[15px]">
+            Yaredharmoney <span style={{color:"#35E0A1"}}>EV</span>
+          </span>
+        </button>
+        {loggedIn ? (
+          <button onClick={() => setView("dashboard")} className="text-sm text-[#8B95A1] hover:text-[#EDEFF2]">My course</button>
+        ) : (
+          <button onClick={() => setView("login")} className="text-sm px-4 py-1.5 rounded-md font-medium" style={{background:"#1B232C", color:"#EDEFF2", border:"1px solid #2B3644"}}>Log in</button>
+        )}
+      </div>
+    </header>
+  );
+}
+
+function CourseOutline({ selectedId, onSelect, unlocked }) {
+  const [open, setOpen] = useState("m1");
+  const canPlay = (l) => l.free || unlocked;
+  return (
+    <div className="space-y-2">
+      {MODULES.map((mod, mi) => (
+        <div key={mod.id} className="rounded-lg overflow-hidden" style={{border:"1px solid #1F2933", background:"#141B22"}}>
+          <button onClick={() => setOpen(open === mod.id ? null : mod.id)} className="w-full flex items-center justify-between px-4 py-3.5">
+            <div className="flex items-center gap-3 text-left">
+              <span className="text-[#4B5563] text-[13px] font-medium">{mi+1}</span>
+              <span className="text-[#EDEFF2] text-[14px] font-medium">{mod.title}</span>
+            </div>
+            <span style={{color:"#8B95A1"}}>{open === mod.id ? "▾" : "▸"}</span>
+          </button>
+          {open === mod.id && (
+            <div style={{borderTop:"1px solid #1F2933"}}>
+              {mod.lessons.map((l) => (
+                <button key={l.id} disabled={!canPlay(l)} onClick={() => onSelect && onSelect(l)}
+                  className="w-full flex items-center justify-between px-4 py-3 pl-11 text-left"
+                  style={{borderTop:"1px solid #181F27", background: selectedId===l.id ? "#1A2530":"transparent", cursor: canPlay(l)?"pointer":"default"}}>
+                  <div className="flex items-center gap-2.5">
+                    <span style={{color: canPlay(l) ? "#35E0A1":"#4B5563"}}>{canPlay(l) ? "▶" : "🔒"}</span>
+                    <span className="text-[13.5px]" style={{color: canPlay(l)?"#EDEFF2":"#8B95A1"}}>{l.title}</span>
+                  </div>
+                  <span className="text-[12px] text-[#4B5563]">{l.duration}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Landing({ setView }) {
+  return (
+    <div className="max-w-4xl mx-auto px-5">
+      <section className="pt-16 pb-14" style={{borderBottom:"1px solid #1F2933"}}>
+        <p style={{color:"#35E0A1", fontFamily:"'Space Grotesk',sans-serif"}} className="text-[13px] font-medium mb-4">A practical EV course, built for Ethiopia</p>
+        <h1 style={{fontFamily:"'Space Grotesk',sans-serif", lineHeight:1.08}} className="text-[38px] sm:text-[52px] font-semibold text-[#EDEFF2] max-w-2xl">
+          Understand electric vehicles before you buy, import, or drive one.
+        </h1>
+        <p className="mt-5 text-[#8B95A1] text-[16px] max-w-lg leading-relaxed">
+          Lessons on how EVs work, what they cost to own, and how to navigate charging and import realities where you live.
+        </p>
+        <div className="mt-8 flex items-center gap-4 flex-wrap">
+          <button onClick={() => setView("checkout")} className="px-5 py-3 rounded-md font-medium text-[14px]" style={{background:"#35E0A1", color:"#0B0F13", fontFamily:"'Space Grotesk',sans-serif"}}>Enroll now →</button>
+          <button onClick={() => setView("dashboard")} className="text-[14px] text-[#8B95A1] hover:text-[#EDEFF2]">Preview the first lesson</button>
+        </div>
+      </section>
+      <section className="py-10" style={{borderTop:"1px solid #1F2933"}}>
+        <h2 style={{fontFamily:"'Space Grotesk',sans-serif"}} className="text-[#EDEFF2] text-[20px] font-semibold mb-6">What's covered</h2>
+        <CourseOutline unlocked={true} onSelect={() => setView("dashboard")} />
+      </section>
+    </div>
+  );
+}
+
+function Login({ setView, setLoggedIn }) {
+  return (
+    <div className="max-w-sm mx-auto px-5 pt-20">
+      <h1 style={{fontFamily:"'Space Grotesk',sans-serif"}} className="text-[#EDEFF2] text-[24px] font-semibold mb-1">Log in</h1>
+      <p className="text-[#8B95A1] text-[13.5px] mb-7">Access your course, anytime.</p>
+      <div className="space-y-3">
+        <input placeholder="Email or phone number" className="w-full px-3.5 py-2.5 rounded-md text-[14px] outline-none" style={{background:"#161D25", border:"1px solid #263140", color:"#EDEFF2"}} />
+        <input placeholder="Password" type="password" className="w-full px-3.5 py-2.5 rounded-md text-[14px] outline-none" style={{background:"#161D25", border:"1px solid #263140", color:"#EDEFF2"}} />
+        <button onClick={() => { setLoggedIn(true); setView("dashboard"); }} className="w-full py-2.5 rounded-md font-medium text-[14px] mt-2" style={{background:"#35E0A1", color:"#0B0F13", fontFamily:"'Space Grotesk',sans-serif"}}>Continue</button>
+      </div>
+      <p className="text-[12.5px] text-[#4B5563] mt-5 text-center">Placeholder form — connect real auth later.</p>
+    </div>
+  );
+}
+
+function Dashboard() {
+  const [dataSaver, setDataSaver] = useState(true);
+  const firstPlayable = ALL_LESSONS.find((l) => l.videoId) || ALL_LESSONS[0];
+  const [current, setCurrent] = useState(firstPlayable);
+  const embedSrc = current && current.videoId
+    ? `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${current.videoId}?autoplay=false&preload=false`
+    : null;
+  return (
+    <div className="max-w-4xl mx-auto px-5 py-10">
+      <div className="flex items-center justify-between mb-8">
+        <h1 style={{fontFamily:"'Space Grotesk',sans-serif"}} className="text-[#EDEFF2] text-[24px] font-semibold">Your course</h1>
+        <button onClick={() => setDataSaver(!dataSaver)} className="flex items-center gap-2 text-[13px] px-3 py-1.5 rounded-md" style={{background:"#1B232C", border:"1px solid #2B3644", color: dataSaver?"#35E0A1":"#8B95A1"}}>
+          {dataSaver ? "📴" : "📶"} {dataSaver ? "Low-data mode on" : "Standard quality"}
+        </button>
+      </div>
+      <div className="rounded-xl overflow-hidden mb-8" style={{border:"1px solid #1F2933"}}>
+        <div className="aspect-video relative" style={{background:"#0C1015"}}>
+          {embedSrc ? (
+            <iframe src={embedSrc} loading="lazy" className="w-full h-full" style={{border:"none"}}
+              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture" allowFullScreen title={current ? current.title : "Lesson"} />
+          ) : current && current.content ? (
+            <div className="w-full h-full overflow-y-auto px-6 py-6">
+              <span className="text-[11px] px-2 py-1 rounded inline-block mb-4" style={{background:"#1F2933", color:"#8B95A1"}}>📄 Reading lesson — video coming soon</span>
+              <p className="text-[14px] leading-relaxed" style={{color:"#C7CDD3", whiteSpace:"pre-line"}}>{current.content}</p>
+            </div>
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+              <span style={{fontSize:"32px"}}>▶</span>
+              <span className="text-[11px] text-[#4B5563] px-4 text-center">No video for this lesson yet.</span>
+            </div>
+          )}
+        </div>
+        <div className="px-4 py-3 flex items-center justify-between" style={{background:"#141B22"}}>
+          <span className="text-[13.5px] text-[#EDEFF2]">{current ? current.title : ""}</span>
+          <span className="text-[12px] text-[#4B5563]">{current ? current.duration : ""}</span>
+        </div>
+      </div>
+      <CourseOutline selectedId={current ? current.id : null} onSelect={setCurrent} unlocked={true} />
+    </div>
+  );
+}
+
+function Checkout() {
+  const [method, setMethod] = useState("telebirr");
+  return (
+    <div className="max-w-sm mx-auto px-5 pt-16 pb-16">
+      <h1 style={{fontFamily:"'Space Grotesk',sans-serif"}} className="text-[#EDEFF2] text-[24px] font-semibold mb-1">Enroll in Yaredharmoney EV</h1>
+      <p className="text-[#8B95A1] text-[13.5px] mb-7">Lifetime access.</p>
+      <div className="rounded-lg px-4 py-3 flex items-center justify-between mb-6" style={{background:"#141B22", border:"1px solid #1F2933"}}>
+        <span className="text-[13.5px] text-[#EDEFF2]">Full course access</span>
+        <span style={{fontFamily:"'Space Grotesk',sans-serif", color:"#35E0A1"}} className="font-semibold text-[15px]">— set price —</span>
+      </div>
+      <p className="text-[12.5px] text-[#8B95A1] mb-2.5">Payment method</p>
+      <div className="space-y-2 mb-6">
+        {[{id:"telebirr",label:"Telebirr"},{id:"cbebirr",label:"CBE Birr"},{id:"card",label:"Debit / credit card"}].map((m) => (
+          <button key={m.id} onClick={() => setMethod(m.id)} className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-md text-[13.5px]"
+            style={{background:"#161D25", border: method===m.id ? "1px solid #35E0A1":"1px solid #263140", color:"#EDEFF2"}}>
+            {m.label}{method===m.id && <span style={{color:"#35E0A1"}}>✓</span>}
+          </button>
+        ))}
+      </div>
+      <button className="w-full py-2.5 rounded-md font-medium text-[14px]" style={{background:"#35E0A1", color:"#0B0F13", fontFamily:"'Space Grotesk',sans-serif"}}>Complete enrollment</button>
+      <p className="text-[12px] text-[#4B5563] mt-4 text-center">Placeholder checkout — connect a live gateway.</p>
+    </div>
+  );
+}
+
+function App() {
+  const [view, setView] = useState("landing");
+  const [loggedIn, setLoggedIn] = useState(false);
+  return (
+    <div style={{background:"#10151B", minHeight:"100vh"}}>
+      <Header setView={setView} loggedIn={loggedIn} />
+      {view === "landing" && <Landing setView={setView} />}
+      {view === "login" && <Login setView={setView} setLoggedIn={setLoggedIn} />}
+      {view === "dashboard" && <Dashboard />}
+      {view === "checkout" && <Checkout />}
+      <div className="max-w-4xl mx-auto px-5 py-10 flex justify-center gap-6 text-[12px] text-[#4B5563]">
+        <button onClick={() => setView("landing")}>Home</button>
+        <button onClick={() => setView("dashboard")}>Course</button>
+        <button onClick={() => setView("checkout")}>Enroll</button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
