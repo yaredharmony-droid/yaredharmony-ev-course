@@ -143,14 +143,19 @@ const LESSONS = {
   }
 };
 
+// Reads the code list from Vercel. Tolerates commas, spaces, line breaks and quote marks.
+function validCodes() {
+  return (process.env.ACCESS_CODES || "")
+    .split(/[,;\s]+/)
+    .map((c) => c.replace(/["'`]/g, "").trim().toUpperCase())
+    .filter(Boolean);
+}
+
 function codeIsValid(code) {
   if (typeof code !== "string") return false;
   const given = code.trim().toUpperCase();
   if (given.length < 6 || given.length > 64) return false;
-  const valid = (process.env.ACCESS_CODES || "")
-    .split(",")
-    .map((c) => c.trim().toUpperCase())
-    .filter(Boolean);
+  const valid = validCodes();
   const givenBuf = Buffer.from(given);
   let ok = false;
   for (const v of valid) {
@@ -173,10 +178,8 @@ function signedEmbedUrl(videoId) {
 module.exports = (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST") {
-      if (req.method !== "POST") {
-    res.status(405).json({ error: "method_not_allowed" });
-    return;
-  }
+    // Visiting the address in a browser: shows only counts, never secrets.
+    res.status(200).json({ codes_loaded: validCodes().length, bunny_key_set: !!process.env.BUNNY_TOKEN_KEY });
     return;
   }
   const body = req.body && typeof req.body === "object" ? req.body : {};
@@ -212,5 +215,3 @@ module.exports = (req, res) => {
   }
   res.status(200).json({ empty: true });
 };
-
-
