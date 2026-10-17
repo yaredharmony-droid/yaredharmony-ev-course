@@ -173,7 +173,10 @@ function signedEmbedUrl(videoId) {
 module.exports = (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   if (req.method !== "POST") {
+      if (req.method !== "POST") {
     res.status(405).json({ error: "method_not_allowed" });
+    return;
+  }
     return;
   }
   const body = req.body && typeof req.body === "object" ? req.body : {};
