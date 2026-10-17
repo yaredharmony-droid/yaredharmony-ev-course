@@ -16,51 +16,71 @@
 <body>
 <div id="root"></div>
 <script type="text/babel" data-type="module">
-const { useState } = React;
+const { useState, useEffect } = React;
 
-const BUNNY_LIBRARY_ID = "664298";
+const CODE_KEY = "yaredev_code";
+const getSavedCode = () => { try { return localStorage.getItem(CODE_KEY) || ""; } catch (e) { return ""; } };
+const saveCode = (c) => { try { localStorage.setItem(CODE_KEY, c); } catch (e) {} };
+const clearCode = () => { try { localStorage.removeItem(CODE_KEY); localStorage.removeItem("yaredev_unlocked"); } catch (e) {} };
+
+// Asks the server about a code and/or a lesson. The code, the video IDs and the
+// lesson text all live on the server (api/play.js), not in this page.
+async function askServer(payload) {
+  try {
+    const r = await fetch("/api/play", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    let data = {};
+    try { data = await r.json(); } catch (e) {}
+    return { status: r.status, data };
+  } catch (e) {
+    return { status: 0, data: {} };
+  }
+}
 
 const MODULES = [
   { id: "m1", title: "Why Electric Vehicles, Why Now", lessons: [
-    { id: "l1b", title: "Introduction to EV and HEV", duration: "14 min", free: true, videoId: "6bb5f77f-7ca9-487a-b9a0-cedcb1de5fe3" },
-    { id: "l1c", title: "Introduction to EV: MHEV and FCEV", duration: "13 min", free: true, videoId: "d8be9f12-07bd-4e3b-9a75-3adbdad51824" },
-    { id: "l1", title: "The global shift to electric", duration: "12 min", free: true, videoId: "", content: "Electric vehicles have gone from a niche experiment to a mainstream shift in less than a decade. Major manufacturers — from established automakers to newer EV-focused brands — now produce electric models across nearly every price range and vehicle type.\n\nThis shift is driven by falling battery costs, tightening emissions regulations in many countries, and growing consumer demand for lower running costs. Compared to combustion engines, EVs are simpler mechanically, with far fewer moving parts to wear out or maintain.\n\nBy the end of this course, you'll understand not just how EVs work, but how to buy, import, and maintain one here in Ethiopia." },
-    { id: "l2", title: "EVs in the Ethiopian market", duration: "18 min", free: true, videoId: "", content: "Ethiopia has seen a fast-growing wave of EV imports in recent years, with brands like Changan, BYD, Neta, Chery, and Dongfeng becoming increasingly common on the road — all vehicles you'll study in detail later in this course.\n\nGovernment policy has played a role in this growth, with import incentives making EVs more price-competitive than in many other markets. At the same time, charging infrastructure is still developing, and local technical expertise is limited.\n\nThat gap — between growing EV ownership and the knowledge needed to service and maintain these vehicles — is exactly what this course is built to close." },
-    { id: "l3", title: "Cost of ownership vs. combustion", duration: "15 min", free: false, videoId: "", content: "One of the strongest arguments for EV ownership is long-term cost. Electricity costs significantly less per kilometer than fuel, and EVs require far less routine maintenance — no oil changes, fewer fluids, and simpler drivetrains with fewer parts that wear out.\n\nThe upfront purchase price is often higher, but this gap narrows over the vehicle's lifetime through fuel and maintenance savings.\n\nThe one major long-term cost to plan for is eventual battery replacement — a real consideration, but typically only relevant after many years of use." },
+    { id: "l1b", title: "Introduction to EV and HEV", duration: "14 min", free: true },
+    { id: "l1c", title: "Introduction to EV: MHEV and FCEV", duration: "13 min", free: true },
+    { id: "l1", title: "The global shift to electric", duration: "12 min", free: true },
+    { id: "l2", title: "EVs in the Ethiopian market", duration: "18 min", free: true },
+    { id: "l3", title: "Cost of ownership vs. combustion", duration: "15 min", free: false },
   ]},
   { id: "m2", title: "EV Systems & Components", lessons: [
-    { id: "l4", title: "Battery, motor, and inverter basics", duration: "20 min", free: false, videoId: "", content: "Every EV drivetrain follows the same basic path: the battery stores energy, the inverter converts that stored DC (direct current) power into AC (alternating current), and the motor uses that AC power to turn the wheels.\n\nThe battery is the largest and most expensive component in the vehicle. The inverter acts as a translator between the battery and motor, since motors need alternating current to spin efficiently. The motor itself converts electrical energy into mechanical motion.\n\nIn the lessons that follow, we'll go deep into each of these systems individually, including the on-board charger, DC-DC converter, and battery management system." },
-    { id: "l4a", title: "Introduction to Battery (Battery Types)", duration: "16 min", free: false, videoId: "9ba7659d-0a9e-4211-8e7f-f038a3deedb9" },
-    { id: "l4a1", title: "Introduction to Battery (Part 1)", duration: "16 min", free: false, videoId: "4a106ab1-65ef-4993-8433-56b86b8a0c11" },
-    { id: "l4a2", title: "Introduction to Battery (BMS)", duration: "16 min", free: false, videoId: "2451c469-6bc4-400f-a843-92fc5f3fb66b" },
-    { id: "l4a3", title: "Introduction to Battery (BMS 2)", duration: "16 min", free: false, videoId: "88dcda9e-53fb-4a76-b2a7-5836504eac7c" },
-    { id: "l4thermal", title: "Thermal Management", duration: "15 min", free: false, videoId: "", content: "Batteries and motors generate heat during use, and heat is one of the biggest threats to both performance and lifespan. Without proper thermal management, batteries degrade faster, lose range, and in extreme cases can become unsafe.\n\nMost modern EVs use liquid cooling loops that circulate coolant around the battery pack and motor to keep temperatures in a safe range, though some systems rely on air cooling instead.\n\nAs a technician, checking the cooling system — coolant levels, pump function, and radiator condition — should be part of any thorough EV inspection, especially for vehicles operating in hot climates." },
-    { id: "l4b", title: "On-board charger and DC-DC converter", duration: "18 min", free: false, videoId: "4da69748-f42e-4728-b5d2-4e7513a31c47" },
-    { id: "l4q", title: "Traction Motor", duration: "15 min", free: false, videoId: "e9979f3e-c4c8-41c3-8863-6ef164bfc874" },
-    { id: "l4g", title: "Charging System", duration: "15 min", free: false, videoId: "72eb1e0e-4628-4b4e-b3ac-b02e8c6daeb0" },
-    { id: "l4g2", title: "Charging System (Part 2)", duration: "15 min", free: false, videoId: "0a3be9e5-eac8-43a5-852e-ccab5059299a" },
-    { id: "l5", title: "Charging types explained", duration: "14 min", free: false, videoId: "", content: "EV charging comes in a few distinct speeds. Level 1 charging uses a standard household outlet and is the slowest option, suitable mainly for overnight top-ups. Level 2 charging uses higher-voltage AC power, common in home charging stations and public chargers, and is significantly faster.\n\nDC fast charging skips the vehicle's onboard charger entirely and feeds power directly to the battery, allowing an 80% charge in well under an hour for many vehicles — though it requires dedicated fast-charging infrastructure.\n\nFor most EV owners in Ethiopia today, Level 1 and Level 2 home charging are the most realistic options, with fast charging becoming more relevant as public infrastructure expands." },
-    { id: "l6", title: "Range, efficiency, and climate effects", duration: "16 min", free: false, videoId: "", content: "An EV's real-world range is almost always lower than its official rated range, and understanding why helps set realistic expectations for owners.\n\nCold and hot weather both reduce range — cold temperatures slow chemical reactions inside the battery, while heat increases the energy needed for cooling systems and cabin climate control. Aggressive driving, highway speeds, and hilly terrain also increase energy consumption.\n\nNone of this means EVs aren't practical for daily use — it simply means planning trips with a buffer and adjusting driving habits when maximizing range matters." },
+    { id: "l4", title: "Battery, motor, and inverter basics", duration: "20 min", free: false },
+    { id: "l4a", title: "Introduction to Battery (Battery Types)", duration: "16 min", free: false },
+    { id: "l4a1", title: "Introduction to Battery (Part 1)", duration: "16 min", free: false },
+    { id: "l4a2", title: "Introduction to Battery (BMS)", duration: "16 min", free: false },
+    { id: "l4a3", title: "Introduction to Battery (BMS 2)", duration: "16 min", free: false },
+    { id: "l4thermal", title: "Thermal Management", duration: "15 min", free: false },
+    { id: "l4b", title: "On-board charger and DC-DC converter", duration: "18 min", free: false },
+    { id: "l4q", title: "Traction Motor", duration: "15 min", free: false },
+    { id: "l4g", title: "Charging System", duration: "15 min", free: false },
+    { id: "l4g2", title: "Charging System (Part 2)", duration: "15 min", free: false },
+    { id: "l5", title: "Charging types explained", duration: "14 min", free: false },
+    { id: "l6", title: "Range, efficiency, and climate effects", duration: "16 min", free: false },
   ]},
   { id: "m3", title: "Vehicle-Specific Diagnostics & Repair", lessons: [
-    { id: "l4c", title: "DC-DC Converter and OBC: Changan E-Star", duration: "16 min", free: false, videoId: "ec2bd1de-a1fa-45b0-920f-9f44abb7bd6e" },
-    { id: "l4j", title: "Battery: Changan E-Star", duration: "17 min", free: false, videoId: "74d8bed8-2af2-414f-8dff-7bffc0c33a43" },
-    { id: "l4f", title: "DC-DC Converter and OBC: Dongfeng", duration: "16 min", free: false, videoId: "56491b24-0555-476d-b525-48229b17cc13" },
-    { id: "l4p", title: "Inverter and DC-DC: Peugeot", duration: "16 min", free: false, videoId: "d079a6f7-fb87-4e6d-b90f-38909746efc8" },
-    { id: "l4d", title: "Components of an EV: Neta", duration: "15 min", free: false, videoId: "4f6b4e11-50d2-4ea4-943b-3d8950d6b958" },
-    { id: "l4h", title: "Battery Assembly: Neta", duration: "17 min", free: false, videoId: "7872e73a-0a87-42ba-a0d8-c4056c40a554" },
-    { id: "l4i", title: "Battery Disassembly", duration: "17 min", free: false, videoId: "399cc07c-6ac5-4b19-8777-5e1f02cff01d" },
-    { id: "l4e", title: "Components of an EV: BYD", duration: "15 min", free: false, videoId: "b6c38df7-3129-4c34-875f-2d02a7eac270" },
-    { id: "l4k", title: "BYD Diagnosis", duration: "17 min", free: false, videoId: "bfb015ff-4742-4ce3-a2b7-e0fe5224d6ae" },
-    { id: "l4l", title: "BYD Yuan Up Diagnosis", duration: "17 min", free: false, videoId: "a71573c4-4ad5-49f5-9d80-d38070ba50db" },
-    { id: "l4m", title: "Chery iCar 3 Health Report", duration: "16 min", free: false, videoId: "b7b70d0d-0b64-41c0-a120-6c569cd81416" },
-    { id: "l4n", title: "Chery iCar 3 Trailer Mode", duration: "14 min", free: false, videoId: "a7d8a7b6-054b-414e-a1cf-61b78e2b0dd6" },
-    { id: "l4o", title: "Chery Service Reset", duration: "12 min", free: false, videoId: "42a7f7af-ace4-403b-9e5d-5167cb329804" },
+    { id: "l4c", title: "DC-DC Converter and OBC: Changan E-Star", duration: "16 min", free: false },
+    { id: "l4j", title: "Battery: Changan E-Star", duration: "17 min", free: false },
+    { id: "l4f", title: "DC-DC Converter and OBC: Dongfeng", duration: "16 min", free: false },
+    { id: "l4p", title: "Inverter and DC-DC: Peugeot", duration: "16 min", free: false },
+    { id: "l4d", title: "Components of an EV: Neta", duration: "15 min", free: false },
+    { id: "l4h", title: "Battery Assembly: Neta", duration: "17 min", free: false },
+    { id: "l4i", title: "Battery Disassembly", duration: "17 min", free: false },
+    { id: "l4e", title: "Components of an EV: BYD", duration: "15 min", free: false },
+    { id: "l4k", title: "BYD Diagnosis", duration: "17 min", free: false },
+    { id: "l4l", title: "BYD Yuan Up Diagnosis", duration: "17 min", free: false },
+    { id: "l4m", title: "Chery iCar 3 Health Report", duration: "16 min", free: false },
+    { id: "l4n", title: "Chery iCar 3 Trailer Mode", duration: "14 min", free: false },
+    { id: "l4o", title: "Chery Service Reset", duration: "12 min", free: false },
   ]},
   { id: "m4", title: "Buying, Importing, and Owning", lessons: [
-    { id: "l7", title: "Import rules and duties", duration: "19 min", free: false, videoId: "", content: "Importing an EV into Ethiopia involves navigating specific customs duties, documentation requirements, and registration steps that differ from importing a combustion vehicle. Rates and incentives can change, so always verify current requirements with official government sources before advising a customer.\n\nCommon documentation includes proof of purchase, vehicle specifications, and compliance certificates. Missing or incorrect paperwork is one of the most frequent causes of delays at customs.\n\nStaying current on import regulations — and knowing where to find authoritative, up-to-date information — is a valuable skill for anyone helping customers navigate this process." },
-    { id: "l8", title: "Finding reliable charging access", duration: "13 min", free: false, videoId: "", content: "Charging access is often the biggest practical concern for new EV owners, especially in markets where public charging infrastructure is still developing. Home charging remains the most reliable option for most owners today, provided the electrical setup can safely support it.\n\nPublic charging networks are gradually expanding, and staying aware of new stations and their locations is genuinely useful advice for customers weighing an EV purchase.\n\nSetting realistic expectations upfront — rather than promising charging convenience that doesn't yet exist everywhere — builds trust and helps new owners plan their routines successfully." },
-    { id: "l9", title: "Maintenance and battery health", duration: "17 min", free: false, videoId: "", content: "EVs need less routine maintenance than combustion vehicles, but they aren't maintenance-free. Tires, brakes, cabin air filters, and cooling systems all still require regular attention.\n\nBattery health deserves special focus. Avoiding regularly charging to 100% or letting the battery sit near empty for long periods helps extend its usable lifespan. Extreme temperatures and frequent fast-charging can also accelerate degradation.\n\nKnowing the warning signs of battery or system issues — reduced range, unusual charging behavior, warning lights — and when a vehicle needs professional service closes out a well-rounded EV education." },
+    { id: "l7", title: "Import rules and duties", duration: "19 min", free: false },
+    { id: "l8", title: "Finding reliable charging access", duration: "13 min", free: false },
+    { id: "l9", title: "Maintenance and battery health", duration: "17 min", free: false },
   ]},
 ];
 const ALL_LESSONS = MODULES.flatMap((m) => m.lessons);
@@ -146,25 +166,33 @@ function Landing({ setView }) {
   );
 }
 
-const ACCESS_CODE = "YAREDEV2026";
-
-function Login({ setView, setLoggedIn }) {
+function Login({ setView, setLoggedIn, setCode: saveToApp, notice }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
-  const submit = () => {
-    if (code.trim().toUpperCase() === ACCESS_CODE) {
-      try { localStorage.setItem("yaredev_unlocked", "1"); } catch (e) {}
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    const entered = code.trim();
+    if (!entered || busy) return;
+    setBusy(true);
+    setError("");
+    const { status } = await askServer({ code: entered });
+    setBusy(false);
+    if (status === 200) {
+      saveCode(entered);
+      saveToApp(entered);
       setLoggedIn(true);
-      setError("");
       setView("dashboard");
-    } else {
+    } else if (status === 401) {
       setError("That code doesn't look right. Check with your seller and try again.");
+    } else {
+      setError("Couldn't reach the server. Check your internet connection and try again.");
     }
   };
   return (
     <div className="max-w-sm mx-auto px-5 pt-20">
       <h1 style={{fontFamily:"'Space Grotesk',sans-serif"}} className="text-[#EDEFF2] text-[24px] font-semibold mb-1">Unlock your course</h1>
       <p className="text-[#8B95A1] text-[13.5px] mb-7">Enter the access code you received after payment.</p>
+      {notice && <p className="text-[12.5px] mb-4" style={{color:"#F2B866"}}>{notice}</p>}
       <div className="space-y-3">
         <input
           value={code}
@@ -175,21 +203,36 @@ function Login({ setView, setLoggedIn }) {
           style={{background:"#161D25", border:"1px solid #263140", color:"#EDEFF2"}}
         />
         {error && <p className="text-[12.5px]" style={{color:"#F26666"}}>{error}</p>}
-        <button onClick={submit} className="w-full py-2.5 rounded-md font-medium text-[14px] mt-2" style={{background:"#35E0A1", color:"#0B0F13", fontFamily:"'Space Grotesk',sans-serif"}}>Unlock course</button>
+        <button onClick={submit} disabled={busy} className="w-full py-2.5 rounded-md font-medium text-[14px] mt-2" style={{background:"#35E0A1", color:"#0B0F13", fontFamily:"'Space Grotesk',sans-serif", opacity: busy ? 0.7 : 1}}>{busy ? "Checking..." : "Unlock course"}</button>
       </div>
       <p className="text-[12.5px] text-[#4B5563] mt-5 text-center">Haven't enrolled yet? <a href="#" onClick={(e) => { e.preventDefault(); setView("checkout"); }} style={{color:"#35E0A1"}}>Get access</a></p>
     </div>
   );
 }
 
-function Dashboard({ setView, unlocked }) {
+function Dashboard({ setView, unlocked, code, onBadCode }) {
   const [dataSaver, setDataSaver] = useState(true);
-  const firstPlayable = ALL_LESSONS.find((l) => l.free && l.videoId) || ALL_LESSONS.find((l) => l.free) || ALL_LESSONS[0];
+  const firstPlayable = ALL_LESSONS.find((l) => l.free) || ALL_LESSONS[0];
   const [current, setCurrent] = useState(firstPlayable);
+  const [media, setMedia] = useState({ state: "idle" });
   const canPlayCurrent = current && (current.free || unlocked);
-  const embedSrc = canPlayCurrent && current.videoId
-    ? `https://iframe.mediadelivery.net/embed/${BUNNY_LIBRARY_ID}/${current.videoId}?autoplay=false&preload=false`
-    : null;
+
+  useEffect(() => {
+    if (!current || !canPlayCurrent) { setMedia({ state: "idle" }); return; }
+    let cancelled = false;
+    setMedia({ state: "loading" });
+    askServer({ lessonId: current.id, code }).then(({ status, data }) => {
+      if (cancelled) return;
+      if (status === 200 && data.url) setMedia({ state: "video", url: data.url });
+      else if (status === 200 && data.content) setMedia({ state: "text", content: data.content });
+      else if (status === 200) setMedia({ state: "empty" });
+      else if (status === 401) { setMedia({ state: "idle" }); onBadCode(); }
+      else setMedia({ state: "error" });
+    });
+    return () => { cancelled = true; };
+  }, [current && current.id, canPlayCurrent, code]);
+
+  const embedSrc = media.state === "video" ? media.url : null;
   return (
     <div className="max-w-4xl mx-auto px-5 py-10">
       <div className="flex items-center justify-between mb-8">
@@ -212,13 +255,22 @@ function Dashboard({ setView, unlocked }) {
               <span className="text-[13px]" style={{color:"#8B95A1"}}>This lesson is part of the full course.</span>
               <button onClick={() => setView("checkout")} className="text-[12.5px] font-medium px-4 py-2 rounded-md" style={{background:"#35E0A1", color:"#0B0F13"}}>Get access</button>
             </div>
+          ) : media.state === "loading" || media.state === "idle" ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="text-[12.5px]" style={{color:"#8B95A1"}}>Loading lesson...</span>
+            </div>
+          ) : media.state === "error" ? (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-2 px-6 text-center">
+              <span className="text-[13px]" style={{color:"#F26666"}}>Couldn't load this lesson.</span>
+              <span className="text-[12px]" style={{color:"#8B95A1"}}>Check your internet connection and tap the lesson again.</span>
+            </div>
           ) : embedSrc ? (
-            <iframe src={embedSrc} loading="lazy" className="w-full h-full" style={{border:"none"}}
+            <iframe src={embedSrc} className="w-full h-full" style={{border:"none"}}
               allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture" allowFullScreen title={current ? current.title : "Lesson"} />
-          ) : current && current.content ? (
+          ) : media.state === "text" ? (
             <div className="w-full h-full overflow-y-auto px-6 py-6">
               <span className="text-[11px] px-2 py-1 rounded inline-block mb-4" style={{background:"#1F2933", color:"#8B95A1"}}>📄 Reading lesson — video coming soon</span>
-              <p className="text-[14px] leading-relaxed" style={{color:"#C7CDD3", whiteSpace:"pre-line"}}>{current.content}</p>
+              <p className="text-[14px] leading-relaxed" style={{color:"#C7CDD3", whiteSpace:"pre-line"}}>{media.content}</p>
             </div>
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-2">
@@ -282,15 +334,23 @@ function Checkout() {
 
 function App() {
   const [view, setView] = useState("landing");
-  const [loggedIn, setLoggedIn] = useState(() => {
-    try { return localStorage.getItem("yaredev_unlocked") === "1"; } catch (e) { return false; }
-  });
+  const [code, setCode] = useState(getSavedCode);
+  const [loggedIn, setLoggedIn] = useState(() => getSavedCode() !== "");
+  const [notice, setNotice] = useState("");
+  // The server said the saved code is no longer valid: forget it and ask again.
+  const onBadCode = () => {
+    clearCode();
+    setCode("");
+    setLoggedIn(false);
+    setNotice("Your access code is no longer valid. Enter your current code to continue.");
+    setView("login");
+  };
   return (
     <div style={{background:"#10151B", minHeight:"100vh"}}>
       <Header setView={setView} loggedIn={loggedIn} />
       {view === "landing" && <Landing setView={setView} />}
-      {view === "login" && <Login setView={setView} setLoggedIn={setLoggedIn} />}
-      {view === "dashboard" && <Dashboard setView={setView} unlocked={loggedIn} />}
+      {view === "login" && <Login setView={setView} setLoggedIn={setLoggedIn} setCode={setCode} notice={notice} />}
+      {view === "dashboard" && <Dashboard setView={setView} unlocked={loggedIn} code={code} onBadCode={onBadCode} />}
       {view === "checkout" && <Checkout />}
       <div className="max-w-4xl mx-auto px-5 py-10 flex justify-center gap-6 text-[12px] text-[#4B5563]">
         <button onClick={() => setView("landing")}>Home</button>
